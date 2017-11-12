@@ -3,8 +3,9 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
-import userRoutes from './routes/user';
 import Promise from 'bluebird';
+import auth from './routes/auth';
+import users from './routes/users';
 
 dotenv.config();
 const app = express();
@@ -15,7 +16,8 @@ mongoose.connect(process.env.MONGODB_URL, { useMongoClient: true });
 app.use(bodyParser.json());
 app.use(cors());
 
-app.use('/api', userRoutes);
+app.use('/api/auth', auth);
+app.use('/api/users', users);
 
 app.get('/*', (req, res) => {
 	res.send('This is an api service');

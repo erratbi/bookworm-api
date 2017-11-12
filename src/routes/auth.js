@@ -5,7 +5,7 @@ const router = Router();
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-router.post('/auth', async (req, res) => {
+router.post('/', async (req, res) => {
 	const { credentials } = req.body;
 
 	const user = await User.findOne({ email: credentials.email });
