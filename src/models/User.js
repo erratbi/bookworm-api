@@ -12,21 +12,28 @@ const schema = new mongoose.Schema(
 			index: true,
 			unique: true,
 		},
-		passwordHash: { type: String, required: true },
+		password: { type: String, required: true },
 		confirmed: { type: Boolean, default: false },
+		confirmationToken: { type: String, default: '' },
 	},
 	{ timestamps: true },
 );
 
 schema.methods.isValidPassword = function isValidPassword(password) {
-	return bcrypt.compareSync(password, this.passwordHash);
+	return bcrypt.compareSync(password, this.password);
 };
 
 schema.methods.generateJWT = function generateJWT() {
-	return jwt.sign({ email: this.email }, process.env.JWT_SECRET);
+	return jwt.sign(
+		{ email: this.email, confirmed: this.confirmed },
+		process.env.JWT_SECRET,
+	);
+};
+schema.methods.setConfirmationToken = function setConfirmationToken() {
+	this.confirmationToken = this.generateJWT();
 };
 schema.methods.setPassword = function setPassword(password) {
-	this.passwordHash = bcrypt.hashSync(password, 10);
+	this.password = bcrypt.hashSync(password, 10);
 };
 schema.methods.toAuthJson = function toAuthJson() {
 	return {
@@ -35,6 +42,18 @@ schema.methods.toAuthJson = function toAuthJson() {
 		token: this.generateJWT(),
 	};
 };
+schema.methods.generateConfirmationUrl = function generateConfirmationUrl() {
+	return `${process.env.baseURL}/confirmation/${this.confirmationToken}`;
+};
+/* eslint-disable */
+schema.pre('save', function(next) {
+	if (this.isNew) {
+		this.setPassword(this.password);
+		this.setConfirmationToken();
+	}
+	next();
+});
+/* eslint-enable */
 
 schema.plugin(uniqueValidator, { message: 'This email is already taken' });
 
