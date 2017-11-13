@@ -39,4 +39,11 @@ router.post('/confirm', async (req, res) => {
 		});
 	}
 });
+
+router.post('/reset_password_request', async (req, res) => {
+	const { email } = req.body;
+	const user = await User.findOne({ email });
+	return res.json();
+});
+
 export default router;

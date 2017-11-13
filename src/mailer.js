@@ -27,3 +27,17 @@ export const sendConfirmationEmail = user => {
 
 	transport.sendMail(email);
 };
+
+export const resetPasswordEmail = user => {
+	const transport = setup();
+	const email = {
+		from,
+		to: user.email,
+		subject: 'Reset your password',
+		text: `
+			Click the link below to reset your password.
+
+			${user.generateResetPasswordUrl()}
+		`,
+	};
+};
