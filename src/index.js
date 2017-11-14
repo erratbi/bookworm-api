@@ -23,6 +23,7 @@ app.get('/*', (req, res) => {
 	res.send('This is an api service');
 });
 
-app.listen(process.env.APP_PORT, () =>
-	console.log(`Server runing on port ${process.env.APP_PORT}`),
+app.listen(
+	process.env.APP_PORT,
+	() => console.log(`Server runing on port ${process.env.APP_PORT}`), //eslint-disable-line
 );

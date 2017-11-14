@@ -4,13 +4,13 @@
 	"main": "index.js",
 	"license": "MIT",
 	"scripts": {
-		"start": "nodemon -w src --exec babel-node -- src/index.js"
+		"start": "nodemon -w src --exec babel-node -- src/index.js",
+		"lint": "eslint src --fix"
 	},
 	"devDependencies": {
 		"babel-cli": "^6.26.0",
 		"babel-eslint": "^8.0.2",
 		"babel-preset-env": "^1.6.1",
-		"dotenv": "^4.0.0",
 		"eslint": "^4.11.0",
 		"eslint-config-airbnb": "^15.0.1",
 		"eslint-config-prettier": "^2.7.0",
@@ -22,9 +22,7 @@
 		"prettier": "^1.8.2"
 	},
 	"babel": {
-		"presets": [
-			"env"
-		]
+		"presets": ["env"]
 	},
 	"dependencies": {
 		"bcryptjs": "^2.4.3",
@@ -36,6 +34,7 @@
 		"lodash": "^4.17.4",
 		"mongoose": "^4.13.1",
 		"mongoose-unique-validator": "^1.0.6",
+		"dotenv": "^4.0.0",
 		"nodemailer": "^4.4.0"
 	}
 }

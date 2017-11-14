@@ -24,11 +24,23 @@ schema.methods.isValidPassword = function isValidPassword(password) {
 };
 
 schema.methods.generateJWT = function generateJWT() {
+	return jwt.sign({ email: this.email, confirmed: this.confirmed }, process.env.JWT_SECRET);
+};
+
+schema.methods.generateResetPasswordLink = function generateResetPasswordLink() {
+	return `${process.env.BASE_URL}/reset_password/${this.generateResetPasswordToken()}`;
+};
+
+schema.methods.generateResetPasswordToken = function generateResetPasswordToken() {
 	return jwt.sign(
-		{ email: this.email, confirmed: this.confirmed },
+		{
+			_id: this._id, // eslint-disable-line
+		},
 		process.env.JWT_SECRET,
+		{ expiresIn: '48h' },
 	);
 };
+
 schema.methods.setConfirmationToken = function setConfirmationToken() {
 	this.confirmationToken = this.generateJWT();
 };
@@ -43,7 +55,7 @@ schema.methods.toAuthJson = function toAuthJson() {
 	};
 };
 schema.methods.generateConfirmationUrl = function generateConfirmationUrl() {
-	return `${process.env.baseURL}/confirmation/${this.confirmationToken}`;
+	return `${process.env.BASE_URL}/confirmation/${this.confirmationToken}`;
 };
 /* eslint-disable */
 schema.pre('save', function(next) {

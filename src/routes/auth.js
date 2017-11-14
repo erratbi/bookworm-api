@@ -1,9 +1,9 @@
 import { Router } from 'express';
+import jwt from 'jsonwebtoken';
 import User from '../models/User';
+import { sendResetPasswordEmail } from '../mailer';
 
 const router = Router();
-
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 router.post('/', async (req, res) => {
 	const { credentials } = req.body;
@@ -17,10 +17,9 @@ router.post('/', async (req, res) => {
 router.post('/confirm', async (req, res) => {
 	try {
 		const { token } = req.body;
-		const user = await User.findOne({ confirmationToken: req.body.token });
+		const user = await User.findOne({ confirmationToken: token });
 
-		if (!user)
-			return res.status(404).json({ error: 'Oops, This token is not valid' });
+		if (!user) return res.status(404).json({ error: 'Oops, This token is not valid' });
 		else if (user && user.confirmed)
 			return res.json({
 				success: 'Your email is already confirmed',
@@ -43,7 +42,36 @@ router.post('/confirm', async (req, res) => {
 router.post('/reset_password_request', async (req, res) => {
 	const { email } = req.body;
 	const user = await User.findOne({ email });
-	return res.json();
+	if (user) {
+		sendResetPasswordEmail(user);
+		return res.json({});
+	}
+	return res.status(400).json({ errors: { global: 'There is no user with such email' } });
+});
+
+router.post('/verify_token', (req, res) => {
+	jwt.verify(req.body.token, process.env.JWT_SECRET, err => {
+		if (err) return res.status(400).json({});
+		return res.json({});
+	});
+});
+
+router.post('/reset_password', (req, res) => {
+	const { password, token } = req.body.data;
+	jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+		if (err) return res.status(400).json({ errors: { global: 'Oops, this token seems to be invalid' } });
+		try {
+			const user = await User.findById(decoded._id); // eslint-disable-line
+			if (user) {
+				user.setPassword(password);
+				await user.save();
+				return res.json({});
+			}
+			return res.status(404).json({ errors: { global: 'User not found' } });
+		} catch (error) {
+			return res.status(500).json({ errors: { global: 'Something went wrong ' } });
+		}
+	});
 });
 
 export default router;
